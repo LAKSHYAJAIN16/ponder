@@ -5,6 +5,7 @@ import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import HomePage from "./pages/Home";
 import SignupPage from "./pages/Signup";
 import LandingPage from "./pages/Landing";
+import MainPage from "./pages/Main";
 
 TouchableOpacity.defaultProps = { activeOpacity: 0.8 };
 export default function App() {
@@ -43,6 +44,11 @@ export default function App() {
         cur={currentNavigation}
         updateState={updateNavigation}
         path="/landing"
+      />
+      <MainPage
+        cur={currentNavigation}
+        updateState={updateNavigation}
+        path="/main"
       />
     </>
   );

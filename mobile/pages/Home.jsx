@@ -2,6 +2,10 @@ import { Button, Text, View, StyleSheet } from "react-native";
 import AppButton, { convertNomenToColors } from "../components/AppButton";
 
 export default function HomePage({ updateState, path, cur }) {
+  useEffect(() => {
+    //Check if we are logged in
+  }, [])
+  
   return (
     <>
       {cur === path && (

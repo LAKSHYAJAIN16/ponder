@@ -31,6 +31,9 @@ export default function SignupPage({ updateState, path, cur }) {
 
       //Save to LocalStorage
       await ls.edit("user", res.data);
+
+      //Forward to signup page
+      updateState("/main");
     }
     catch(err){
       console.log(err);
