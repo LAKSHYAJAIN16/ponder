@@ -1,9 +1,32 @@
+import { useEffect } from "react";
 import { Button, Text, View, StyleSheet } from "react-native";
 import AppButton, { convertNomenToColors } from "../components/AppButton";
+import ls from "../lib/ls";
+
 
 export default function HomePage({ updateState, path, cur }) {
   useEffect(() => {
     //Check if we are logged in
+    const init = async() => {
+      //Get Loggedin variable
+      const isLogged = await ls.get("logged");
+      console.log(isLogged);
+
+      if(isLogged){
+        if(isLogged === "1"){
+          //Move to main page!
+          updateState("/main");
+        }
+        else{
+          // pogchamp! we signed out!
+        }
+      }
+      else{
+        // we are not logged in, first instance
+      }
+    }
+
+    init();
   }, [])
   
   return (
