@@ -1,12 +1,13 @@
 {
-  "name": "web",
+  "name": "ponder-web",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev -p 1900",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "ngrok": "ngrok http 1900 --authtoken 2JwKvT7lay4kGL9utq5OXRZnHg5_4621fzHSqwf6M6Myhyfra"
   },
   "dependencies": {
     "faunadb": "^4.7.1",
@@ -16,6 +17,7 @@
   },
   "devDependencies": {
     "eslint": "8.31.0",
-    "eslint-config-next": "13.1.1"
+    "eslint-config-next": "13.1.1",
+    "ngrok": "^4.3.3"
   }
 }

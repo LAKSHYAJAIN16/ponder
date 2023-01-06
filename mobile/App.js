@@ -4,13 +4,14 @@ import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 
 import HomePage from "./pages/Home";
 import SignupPage from "./pages/Signup";
+import LandingPage from "./pages/Landing";
 
 TouchableOpacity.defaultProps = { activeOpacity: 0.8 };
 export default function App() {
   const [currentNavigation, setCurrentNavigation] = useState("/home");
   const [fontsLoaded] = useFonts({
     Mulish: require("./assets/fonts/Mulish.ttf"),
-    MulishBold : require("./assets/fonts/Mulish-Bold.ttf"),
+    MulishBold: require("./assets/fonts/Mulish-Bold.ttf"),
   });
 
   if (!fontsLoaded) {
@@ -37,6 +38,11 @@ export default function App() {
         cur={currentNavigation}
         updateState={updateNavigation}
         path="/signup"
+      />
+      <LandingPage
+        cur={currentNavigation}
+        updateState={updateNavigation}
+        path="/landing"
       />
     </>
   );
