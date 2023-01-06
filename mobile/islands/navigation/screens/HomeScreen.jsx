@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
-import Ionicons from "react-native-vector-icons/Ionicons";
 import Badge from "../../../components/Badge";
 import getTimeOfDay from "../../../lib/getTimeOfDay";
 
 import ls from "../../../lib/ls";
 
-export default function HomeScreen({ navigation }) {
+export default function HomeScreen({ navigation, route }) {
   const [user, setUser] = useState({ data: {}, ref: {} });
+
   useEffect(() => {
     const init = async () => {
       const user = await ls.get("user", true);
@@ -16,6 +16,10 @@ export default function HomeScreen({ navigation }) {
     };
     init();
   }, []);
+
+  const changeContentFilter = (intent) => {
+    //Change Content Filter
+  };
 
   return (
     <View style={styles.container}>
@@ -26,7 +30,18 @@ export default function HomeScreen({ navigation }) {
 
         {/* The Badges for trending and followers */}
         <View style={styles.badges}>
-          <Badge color={"red"} text={"trending"} icon="flame-outline" />
+          <Badge
+            color={"red"}
+            text={"trending"}
+            icon="flame-outline"
+            onPress={() => changeContentFilter("trending")}
+          />
+          <Badge
+            color={"blue"}
+            text={"following"}
+            icon="people-outline"
+            onPress={() => changeContentFilter("following")}
+          />
         </View>
       </View>
     </View>
@@ -44,7 +59,7 @@ const styles = StyleSheet.create({
   text: {
     fontFamily: "MulishBold",
     textTransform: "lowercase",
-    fontSize: 20,
+    fontSize: 22,
   },
   badges: {
     display: "flex",

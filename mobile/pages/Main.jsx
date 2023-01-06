@@ -3,13 +3,13 @@ import AppButton, { convertNomenToColors } from "../components/AppButton";
 
 import Icon from "../components/Icon";
 import MainContainer from "../islands/navigation/MainContainer";
-import UserProfilePicture from "../islands/UserProfilePicture";
+import UserProfilePicture from "../components/UserProfilePicture";
 
 export default function MainPage({ updateState, path, cur }) {
   return (
     <>
       {cur === path && (
-        <MainContainer />
+        <MainContainer updateState={updateState}/>
       )}
     </>
   );

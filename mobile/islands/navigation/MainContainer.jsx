@@ -15,7 +15,7 @@ const notificationsName = "notifications";
 
 const Tab = createBottomTabNavigator();
 
-function MainContainer() {
+function MainContainer({ updateState }) {
   return (
     <NavigationContainer>
       <Tab.Navigator
@@ -55,11 +55,13 @@ function MainContainer() {
           options={{
             headerShown: false,
           }}
+          initialParams={{ updateState : updateState }}
         />
         <Tab.Screen
           name={createName}
           component={CreateScreen}
           options={{ headerShown: false }}
+          initialParams={{ updateState : updateState }}
         />
         <Tab.Screen
           name={notificationsName}
@@ -69,6 +71,7 @@ function MainContainer() {
             // tabBarBadge: 4,
             // tabBarBadgeStyle: { fontFamily: "Mulish", backgroundColor:"rgba(0, 0, 0, 0.1)", color:"rgb(160, 62, 153)" },
           }}
+          initialParams={{ updateState : updateState }}
         />
       </Tab.Navigator>
     </NavigationContainer>

@@ -6,6 +6,7 @@ import HomePage from "./pages/Home";
 import SignupPage from "./pages/Signup";
 import LandingPage from "./pages/Landing";
 import MainPage from "./pages/Main";
+import CreateTopic from "./pages/CreateTopic";
 
 TouchableOpacity.defaultProps = { activeOpacity: 0.8 };
 export default function App() {
@@ -49,6 +50,11 @@ export default function App() {
         cur={currentNavigation}
         updateState={updateNavigation}
         path="/main"
+      />
+      <CreateTopic
+        cur={currentNavigation}
+        updateState={updateNavigation}
+        path="/create-topic"
       />
     </>
   );
