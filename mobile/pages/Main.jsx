@@ -5,12 +5,10 @@ import Icon from "../components/Icon";
 import MainContainer from "../islands/navigation/MainContainer";
 import UserProfilePicture from "../components/UserProfilePicture";
 
-export default function MainPage({ updateState, path, cur }) {
+export default function MainPage({ navigation }) {
   return (
     <>
-      {cur === path && (
-        <MainContainer updateState={updateState}/>
-      )}
+      <MainContainer />
     </>
   );
 }

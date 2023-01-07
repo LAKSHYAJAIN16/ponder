@@ -3,35 +3,31 @@ import { Button, Text, View, StyleSheet } from "react-native";
 import AppButton, { convertNomenToColors } from "../components/AppButton";
 import ls from "../lib/ls";
 
-
-export default function HomePage({ updateState, path, cur }) {
+export default function HomePage({ navigation }) {
   useEffect(() => {
     //Check if we are logged in
-    const init = async() => {
+    const init = async () => {
       //Get Loggedin variable
       const isLogged = await ls.get("logged");
       console.log(isLogged);
 
-      if(isLogged){
-        if(isLogged === "1"){
+      if (isLogged) {
+        if (isLogged === "1") {
           //Move to main page!
-          updateState("/main");
-        }
-        else{
+          navigation.navigate("Main")
+        } else {
           // pogchamp! we signed out!
         }
-      }
-      else{
+      } else {
         // we are not logged in, first instance
       }
-    }
+    };
 
     init();
-  }, [])
-  
+  }, []);
+
   return (
     <>
-      {cur === path && (
         <View style={styles.container}>
           <Text style={styles.text}>ponder</Text>
           <Text style={styles.subText}>
@@ -45,7 +41,6 @@ export default function HomePage({ updateState, path, cur }) {
             onPress={() => updateState("/landing")}
           ></AppButton>
         </View>
-      )}
     </>
   );
 }

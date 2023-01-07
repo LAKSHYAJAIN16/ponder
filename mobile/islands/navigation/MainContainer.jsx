@@ -5,8 +5,9 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 
 // Screens
 import HomeScreen from "./screens/HomeScreen";
-import CreateScreen from "./screens/CreateScreen";
+import TopicsScreen from "./screens/TopicsScreen";
 import NotificationsScreen from "./screens/NotificationsScreen";
+import CreateTopic from "../independent/CreateTopic";
 
 //Screen names
 const homeName = "home";
@@ -15,9 +16,9 @@ const notificationsName = "notifications";
 
 const Tab = createBottomTabNavigator();
 
-function MainContainer({ updateState }) {
+function MainContainer() {
   return (
-    <NavigationContainer>
+    <NavigationContainer independent={true}>
       <Tab.Navigator
         headerMode="none"
         initialRouteName={homeName}
@@ -36,7 +37,11 @@ function MainContainer({ updateState }) {
                 : "notifications-outline";
             }
 
-            return <Ionicons name={iconName} size={size} color={color} />;
+            if (route !== "createTopic") {
+              return <Ionicons name={iconName} size={size} color={color} />;
+            } else {
+              return <></>;
+            }
           },
         })}
         tabBarOptions={{
@@ -48,6 +53,7 @@ function MainContainer({ updateState }) {
             fontFamily: "MulishBold",
           },
         }}
+
       >
         <Tab.Screen
           name={homeName}
@@ -55,13 +61,11 @@ function MainContainer({ updateState }) {
           options={{
             headerShown: false,
           }}
-          initialParams={{ updateState : updateState }}
         />
         <Tab.Screen
           name={createName}
-          component={CreateScreen}
+          component={TopicsScreen}
           options={{ headerShown: false }}
-          initialParams={{ updateState : updateState }}
         />
         <Tab.Screen
           name={notificationsName}
@@ -71,7 +75,6 @@ function MainContainer({ updateState }) {
             // tabBarBadge: 4,
             // tabBarBadgeStyle: { fontFamily: "Mulish", backgroundColor:"rgba(0, 0, 0, 0.1)", color:"rgb(160, 62, 153)" },
           }}
-          initialParams={{ updateState : updateState }}
         />
       </Tab.Navigator>
     </NavigationContainer>
