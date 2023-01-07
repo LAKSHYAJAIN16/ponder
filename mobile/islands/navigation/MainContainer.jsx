@@ -43,6 +43,7 @@ function MainContainer() {
               return <></>;
             }
           },
+          tabBarHideOnKeyboard: true
         })}
         tabBarOptions={{
           activeTintColor: "#A03E99",
