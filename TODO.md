@@ -6,3 +6,4 @@
 > too slow
 > vote UI
 > home page glitch (set the initial page in the top nav dynamically based on loggedin)
+> lol
