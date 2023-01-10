@@ -17,7 +17,9 @@ import AppButton, { convertNomenToColors } from "../../components/AppButton";
 const width = Dimensions.get("window").width;
 export default function TopicFocus({ route, navigation }) {
   const [topic, setTopic] = useState({ data: { temp: {} } });
+  const [message, setMessage] = useState("");
   const [user, setUser] = useState({ data: {} });
+  const [stateOfInput, setStateOfInput] = useState(0);
 
   useEffect(() => {
     const init = async () => {
@@ -28,6 +30,14 @@ export default function TopicFocus({ route, navigation }) {
     };
     init();
   }, []);
+
+  const post = async () => {
+    console.log(message);
+  };
+
+  const forOrAgainst = async () => {
+    console.log("choose your stance");
+  };
 
   return (
     <>
@@ -64,22 +74,32 @@ export default function TopicFocus({ route, navigation }) {
         </Text>
 
         {/* Vote / Write Your Opinion */}
-        <View style={{ ...styles.bottom }}>
-          <View style={styles.hFlex}>
-            <Image
-              source={{ uri: user["data"]["pfpic"] }}
-              style={styles.userPfpic}
-            />
+        {stateOfInput === 0 && (
+          <View style={{ ...styles.bottom }}>
+            <AppButton color={convertNomenToColors("yellow")} title="choose your stance"></AppButton>
+          </View>
+        )}
+        {stateOfInput === 1 && (
+          <View style={{ ...styles.bottom }}>
             <View style={styles.hFlex}>
-              <TextInput
-                placeholder="Share your views"
-                style={styles.textInputShare}
-                multiline={true}
-              ></TextInput>
-              <Text style={styles.textInputPostButton}>Post</Text>
+              <Image
+                source={{ uri: user["data"]["pfpic"] }}
+                style={styles.userPfpic}
+              />
+              <View style={styles.hFlex}>
+                <TextInput
+                  placeholder="Share your views"
+                  style={styles.textInputShare}
+                  multiline={true}
+                  onChangeText={(text) => setMessage(text)}
+                ></TextInput>
+                <Text style={styles.textInputPostButton} onPress={() => post()}>
+                  Post
+                </Text>
+              </View>
             </View>
           </View>
-        </View>
+        )}
       </View>
     </>
   );
@@ -157,6 +177,10 @@ const styles = StyleSheet.create({
   },
   textInputPostButton: {
     fontFamily: "MulishBold",
-    color:"blue"
+    color: "blue",
   },
+  stance : {
+    textAlign:"center",
+    fontFamily:"MulishBold",
+  }
 });

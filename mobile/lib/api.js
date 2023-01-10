@@ -1,3 +1,3 @@
 export default api = {
-    route : "https://4b50-2402-e280-2321-1a4-e000-1729-31d3-dbff.ngrok.io/api",
+    route : "https://7b56-2409-4052-60d-2867-cdfe-b2ad-fe0a-9ab7.ngrok.io/api",
 }
