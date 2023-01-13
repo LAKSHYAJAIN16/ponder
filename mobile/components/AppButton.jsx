@@ -21,6 +21,12 @@ export function convertNomenToColors(nomen) {
       return "#86A873";
     case "yellow":
       return "#A03E99";
+    case "green":
+      return "green";
+    case "red":
+      return "red";
+    case "grey":
+      return "#808080"
     default:
       return "#009688";
   }
