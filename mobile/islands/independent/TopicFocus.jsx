@@ -196,7 +196,7 @@ export default function TopicFocus({ route, navigation }) {
               )}
               {e["data"]["msg"]["voteType"] === "against" && (
                 <>
-                  <View style={{marginLeft:45}}>
+                  <View style={{ marginLeft: 0 }}>
                     <Text style={{ ...styles.postName, textAlign: "right" }}>
                       {e["data"]["temp"]["username"]}
                     </Text>
@@ -211,7 +211,7 @@ export default function TopicFocus({ route, navigation }) {
                     </Text>
                   </View>
                   <Image
-                    style={{ ...styles.postPfpic, marginLeft:7 }}
+                    style={{ ...styles.postPfpic, marginLeft: 7 }}
                     source={{ uri: e["data"]["temp"]["userPfpic"] }}
                   />
                 </>
@@ -222,57 +222,62 @@ export default function TopicFocus({ route, navigation }) {
 
         {/* Vote / Write Your Opinion */}
         <View style={{ ...styles.bottom }}>
-          {stateOfInput === 0 && (
-            <>
-              <AppButton
-                color={convertNomenToColors("yellow")}
-                title="choose your stance"
-                onPress={() => setStateOfInput(1)}
-              ></AppButton>
-            </>
-          )}
-          {stateOfInput === 1 && (
-            <View>
-              <AppButton
-                color={convertNomenToColors("green")}
-                title="for"
-                onPress={() => vote("for")}
-                style={{ marginBottom: 10 }}
-              ></AppButton>
-              <AppButton
-                color={convertNomenToColors("grey")}
-                title="neutral"
-                onPress={() => vote("neutral")}
-                style={{ marginBottom: 10 }}
-              ></AppButton>
-              <AppButton
-                color={convertNomenToColors("red")}
-                title="against"
-                onPress={() => vote("against")}
-                style={{ marginBottom: 10 }}
-              ></AppButton>
-            </View>
-          )}
-          {stateOfInput === 2 && (
-            <View style={styles.hFlex}>
-              <Image
-                source={{ uri: user["data"]["pfpic"] }}
-                style={styles.userPfpic}
-              />
-              <View style={styles.hFlex}>
-                <TextInput
-                  placeholder="Share your views"
-                  style={styles.textInputShare}
-                  multiline={true}
-                  ref={textInput}
-                  onChangeText={(text) => setMessage(text)}
-                ></TextInput>
-                <Text style={styles.textInputPostButton} onPress={() => post()}>
-                  Post
-                </Text>
+          <View style={{ ...styles.hFlex, left: "auto", right: "auto" }}>
+            {stateOfInput === 0 && (
+              <>
+                <AppButton
+                  color={convertNomenToColors("yellow")}
+                  title="choose your stance"
+                  onPress={() => setStateOfInput(1)}
+                ></AppButton>
+              </>
+            )}
+            {stateOfInput === 1 && (
+              <View>
+                <AppButton
+                  color={convertNomenToColors("green")}
+                  title="for"
+                  onPress={() => vote("for")}
+                  style={{ marginBottom: 10 }}
+                ></AppButton>
+                <AppButton
+                  color={convertNomenToColors("grey")}
+                  title="neutral"
+                  onPress={() => vote("neutral")}
+                  style={{ marginBottom: 10 }}
+                ></AppButton>
+                <AppButton
+                  color={convertNomenToColors("red")}
+                  title="against"
+                  onPress={() => vote("against")}
+                  style={{ marginBottom: 10 }}
+                ></AppButton>
               </View>
-            </View>
-          )}
+            )}
+            {stateOfInput === 2 && (
+              <View style={styles.hFlex}>
+                <Image
+                  source={{ uri: user["data"]["pfpic"] }}
+                  style={styles.userPfpic}
+                />
+                <View style={styles.hFlex}>
+                  <TextInput
+                    placeholder="Share your views"
+                    style={styles.textInputShare}
+                    multiline={true}
+                    ref={textInput}
+                    onChangeText={(text) => setMessage(text)}
+                  ></TextInput>
+                  <Text
+                    style={styles.textInputPostButton}
+                    onPress={() => post()}
+                  >
+                    Post
+                  </Text>
+                </View>
+              </View>
+            )}
+          </View>
         </View>
       </View>
     </>
@@ -331,10 +336,8 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   bottom: {
-    flex: 1,
-    justifyContent: "flex-end",
-    paddingBottom: 10,
-    paddingRight: 10,
+    position: "absolute",
+    bottom: 0,
   },
   userPfpic: {
     width: 30,
@@ -358,9 +361,9 @@ const styles = StyleSheet.create({
     fontFamily: "MulishBold",
   },
   postAct: {
+    paddingTop: 10,
     display: "flex",
     flexDirection: "row",
-    marginBottom:20,
   },
   postPfpic: {
     width: 40,
@@ -379,6 +382,6 @@ const styles = StyleSheet.create({
   postBody: {
     fontFamily: "Mulish",
     fontSize: 17,
-    width:width * 0.8,
+    width: width * 0.8,
   },
 });
