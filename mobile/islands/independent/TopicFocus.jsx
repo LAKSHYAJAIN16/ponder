@@ -16,8 +16,12 @@ import moment from "moment";
 import ls from "../../lib/ls";
 import AppButton, { convertNomenToColors } from "../../components/AppButton";
 import queryGet from "../../lib/queryGet";
+import GestureRecognizer, {
+  swipeDirections,
+} from "react-native-swipe-gestures";
 
 const width = Dimensions.get("window").width;
+const height = Dimensions.get("window").height;
 export default function TopicFocus({ route, navigation }) {
   const [topic, setTopic] = useState({ data: { temp: {} } });
   const [voteData, setVoteData] = useState({
@@ -25,6 +29,7 @@ export default function TopicFocus({ route, navigation }) {
     for: { num: 0 },
     neutral: { num: 0 },
   });
+  const [reactionData, setReactionData] = useState({});
   const [posts, setPosts] = useState([]);
   const [message, setMessage] = useState("");
   const [user, setUser] = useState({ data: {} });
@@ -69,6 +74,17 @@ export default function TopicFocus({ route, navigation }) {
         `/votes/get/topic?id=${t["data"]["id"]}`
       );
 
+      // Poop and Smart
+      queryGet(
+        (data) => {
+          setReactionData(data);
+        },
+        (data) => {
+          setReactionData(data);
+        },
+        `${t["data"]["id"]}~postReactionData`,
+        `/reactions/getAllOnTopic?id=${t["data"]["id"]}`
+      );
       //View
       const payload = {
         user: us["data"]["id"],
@@ -121,9 +137,50 @@ export default function TopicFocus({ route, navigation }) {
     console.log(res.data);
   };
 
+  const swipeCallback = async (gestureName, gestureState, post) => {
+    const { SWIPE_UP, SWIPE_DOWN, SWIPE_LEFT, SWIPE_RIGHT } = swipeDirections;
+    switch (gestureName) {
+      case SWIPE_LEFT:
+        // Poop
+        const payload_1 = {
+          user: user.data.id,
+          topic: topic["data"]["id"],
+          post: post["data"]["id"],
+          type: "poop",
+        };
+        const doc_1 = await axios.post(
+          api.route + "/reactions/create",
+          payload_1
+        );
+        console.log(doc_1.data);
+        break;
+      case SWIPE_RIGHT:
+        // Cool
+        const payload_2 = {
+          user: user.data.id,
+          topic: topic["data"]["id"],
+          post: post["data"]["id"],
+          type: "smart",
+        };
+        const doc_2 = await axios.post(
+          api.route + "/reactions/create",
+          payload_2
+        );
+        console.log(doc_2.data);
+        break;
+    }
+  };
+
   return (
     <>
-      <View style={styles.main}>
+      <ScrollView
+        style={styles.main}
+        contentContainerStyle={{
+          flexGrow: 1,
+          justifyContent: "space-between",
+          flexDirection: "column",
+        }}
+      >
         {/* Navbar boring */}
         <View style={styles.nav}>
           <Pressable onPress={() => navigation.navigate("Main")}>
@@ -161,68 +218,99 @@ export default function TopicFocus({ route, navigation }) {
         {/* Actual Posts */}
         <View style={styles.postsMain}>
           {posts.map((e) => (
-            <View style={styles.postAct}>
-              {e["data"]["msg"]["voteType"] === "for" && (
-                <>
-                  <Image
-                    style={styles.postPfpic}
-                    source={{ uri: e["data"]["temp"]["userPfpic"] }}
-                  />
-                  <View style={styles.postRight}>
-                    <Text style={styles.postName}>
-                      {e["data"]["temp"]["username"]}
-                    </Text>
-                    <Text style={{ ...styles.postBody, color: "green" }}>
-                      {e["data"]["msg"]["body"]}
-                    </Text>
-                  </View>
-                </>
-              )}
-              {e["data"]["msg"]["voteType"] === "neutral" && (
-                <>
-                  <Image
-                    style={styles.postPfpic}
-                    source={{ uri: e["data"]["temp"]["userPfpic"] }}
-                  />
-                  <View style={styles.postRight}>
-                    <Text style={styles.postName}>
-                      {e["data"]["temp"]["username"]}
-                    </Text>
-                    <Text style={{ ...styles.postBody, color: "grey" }}>
-                      {e["data"]["msg"]["body"]}
-                    </Text>
-                  </View>
-                </>
-              )}
-              {e["data"]["msg"]["voteType"] === "against" && (
-                <>
-                  <View style={{ marginLeft: 0 }}>
-                    <Text style={{ ...styles.postName, textAlign: "right" }}>
-                      {e["data"]["temp"]["username"]}
-                    </Text>
-                    <Text
-                      style={{
-                        ...styles.postBody,
-                        color: "red",
-                        textAlign: "right",
-                      }}
-                    >
-                      {e["data"]["msg"]["body"]}
-                    </Text>
-                  </View>
-                  <Image
-                    style={{ ...styles.postPfpic, marginLeft: 7 }}
-                    source={{ uri: e["data"]["temp"]["userPfpic"] }}
-                  />
-                </>
-              )}
-            </View>
+            <GestureRecognizer
+              config={{
+                velocityThreshold: 0.3,
+                directionalOffsetThreshold: 80,
+              }}
+              onSwipe={(direction, state) => swipeCallback(direction, state, e)}
+            >
+              <View style={styles.postAct}>
+                {e["data"]["msg"]["voteType"] === "for" && (
+                  <>
+                    <Image
+                      style={styles.postPfpic}
+                      source={{ uri: e["data"]["temp"]["userPfpic"] }}
+                    />
+                    <View style={styles.postRight}>
+                      <Text style={styles.postName}>
+                        {e["data"]["temp"]["username"]}
+                      </Text>
+                      <Text style={{ ...styles.postBody, color: "green" }}>
+                        {e["data"]["msg"]["body"]}
+                      </Text>
+                      {reactionData !== {} && (
+                        <>
+                          {reactionData[e["data"]["id"]] !== undefined && (
+                            <>
+                              <View style={styles.reactions}>
+                                <View style={styles.reaction}>
+                                  <Text style={{fontFamily:"MulishBold"}}>💩</Text>
+                                  <Text>
+                                    {reactionData[e["data"]["id"]].poop}
+                                  </Text>
+                                </View>
+
+                                <View style={styles.reaction}>
+                                  <Text style={{fontFamily:"MulishBold"}}>🧠</Text>
+                                  <Text>
+                                    {reactionData[e["data"]["id"]].smart}
+                                  </Text>
+                                </View>
+                              </View>
+                            </>
+                          )}
+                        </>
+                      )}
+                    </View>
+                  </>
+                )}
+                {e["data"]["msg"]["voteType"] === "neutral" && (
+                  <>
+                    <Image
+                      style={styles.postPfpic}
+                      source={{ uri: e["data"]["temp"]["userPfpic"] }}
+                    />
+                    <View style={styles.postRight}>
+                      <Text style={styles.postName}>
+                        {e["data"]["temp"]["username"]}
+                      </Text>
+                      <Text style={{ ...styles.postBody, color: "grey" }}>
+                        {e["data"]["msg"]["body"]}
+                      </Text>
+                    </View>
+                  </>
+                )}
+                {e["data"]["msg"]["voteType"] === "against" && (
+                  <>
+                    <View style={{ marginLeft: -15 }}>
+                      <Text style={{ ...styles.postName, textAlign: "right" }}>
+                        {e["data"]["temp"]["username"]}
+                      </Text>
+                      <Text
+                        style={{
+                          ...styles.postBody,
+                          color: "red",
+                          textAlign: "right",
+                        }}
+                      >
+                        {e["data"]["msg"]["body"]}
+                      </Text>
+                    </View>
+                    <Image
+                      style={{ ...styles.postPfpic, marginLeft: 7 }}
+                      source={{ uri: e["data"]["temp"]["userPfpic"] }}
+                    />
+                  </>
+                )}
+              </View>
+            </GestureRecognizer>
           ))}
         </View>
 
         {/* Vote / Write Your Opinion */}
         <View style={{ ...styles.bottom }}>
-          <View style={{ ...styles.hFlex, left: "auto", right: "auto" }}>
+          <View style={{ ...styles.hFlex }}>
             {stateOfInput === 0 && (
               <>
                 <AppButton
@@ -255,12 +343,21 @@ export default function TopicFocus({ route, navigation }) {
               </View>
             )}
             {stateOfInput === 2 && (
-              <View style={styles.hFlex}>
+              <View
+                style={{
+                  ...styles.hFlex,
+                  backgroundColor: "lightgray",
+                  paddingLeft: 10,
+                  paddingRight: 10,
+                  borderRadius: 25,
+                  height: 50,
+                }}
+              >
                 <Image
                   source={{ uri: user["data"]["pfpic"] }}
                   style={styles.userPfpic}
                 />
-                <View style={styles.hFlex}>
+                <View style={{ ...styles.hFlex }}>
                   <TextInput
                     placeholder="Share your views"
                     style={styles.textInputShare}
@@ -279,7 +376,7 @@ export default function TopicFocus({ route, navigation }) {
             )}
           </View>
         </View>
-      </View>
+      </ScrollView>
     </>
   );
 }
@@ -336,8 +433,13 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   bottom: {
-    position: "absolute",
-    bottom: 0,
+    justifyContent: "flex-end",
+    marginTop: 10,
+    marginBottom: 10,
+    flex: 1,
+    justifyContent: "center",
+    alignContent: "center",
+    flexDirection: "row",
   },
   userPfpic: {
     width: 30,
@@ -348,9 +450,9 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     fontFamily: "MulishBold",
     color: convertNomenToColors("yellow"),
-    minWidth: width * 0.7,
-    width: width * 0.7,
-    maxWidth: width * 0.7,
+    minWidth: width * 0.65,
+    width: width * 0.65,
+    maxWidth: width * 0.65,
   },
   textInputPostButton: {
     fontFamily: "MulishBold",
@@ -383,5 +485,20 @@ const styles = StyleSheet.create({
     fontFamily: "Mulish",
     fontSize: 17,
     width: width * 0.8,
+  },
+  reactions: {
+    display: "flex",
+    flexDirection: "row",
+    marginTop:3,
+  },
+  reaction: {
+    display: "flex",
+    flexDirection: "row",
+    borderRadius:100,
+    borderColor:"black",
+    borderWidth:1,
+    paddingLeft:3,
+    paddingRight:3,
+    marginRight:2,
   },
 });
