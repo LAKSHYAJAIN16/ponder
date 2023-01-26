@@ -11,14 +11,9 @@ export default async function handler(req, res) {
   const dat = {
     id: id,
     description: req.body.description,
-    title: req.body.title,
     topic : req.body.topic,
     toc: Date.now(),
-    user: Ref(Collection("users"), req.body.user),
-    temp : {
-      username : req.body.username,
-      userPfpic : req.body.userProfilePic,
-    }
+    img : req.body.img,
   };
 
   //Fql

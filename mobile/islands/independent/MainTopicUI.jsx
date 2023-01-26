@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Image,
   Pressable,
+  ScrollView,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import queryGet from "../../lib/queryGet";
@@ -18,7 +19,7 @@ export default function MainTopicUI({ navigation }) {
     fetch();
   }, []);
 
-  const fetch = async() => {
+  const fetch = async () => {
     queryGet(
       (data) => {
         setTopics(data["data"]);
@@ -29,25 +30,29 @@ export default function MainTopicUI({ navigation }) {
       "main-topics",
       "/topics/getAll"
     );
-  }
+  };
 
   const focus = (e) => {
-    navigation.navigate('TopicFocus', {
-      topic : JSON.stringify(e),
+    navigation.navigate("TopicFocus", {
+      topic: JSON.stringify(e),
     });
-  }
+  };
 
   return (
-    <View style={styles.main}>
+    <ScrollView
+      style={styles.main}
+      contentContainerStyle={{
+        flexGrow: 1,
+        justifyContent: "space-between",
+        flexDirection: "column",
+      }}
+    >
       {/* Top */}
       <View style={styles.nav}>
-        <Text style={styles.text}>topics</Text>
+        <Text style={styles.text}>discussions</Text>
         <View style={styles.add}>
-          <TouchableOpacity onPress={() => fetch()} style={{marginLeft:10}}>
+          <TouchableOpacity onPress={() => fetch()} style={{ marginLeft: 10 }}>
             <Ionicons name="refresh-outline" size={20} color="black" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate("CreateModal")}>
-            <Ionicons name="add-circle-outline" size={30} color="black" />
           </TouchableOpacity>
         </View>
       </View>
@@ -55,24 +60,28 @@ export default function MainTopicUI({ navigation }) {
       {/* Bottom */}
       {topics.map((e) => (
         <Pressable onPress={() => focus(e)}>
-          <View style={styles.single}>
+          <View style={styles.mainSingle}>
             <Image
-              source={{ uri: e["data"]["temp"]["userPfpic"] }}
+              source={{ uri: e["data"]["img"] }}
               style={styles.singleImage}
             />
-            <View style={{ paddingLeft: 5 }}>
-              <Text style={styles.singleText}>{e["data"]["topic"]}</Text>
-              <Text style={styles.singleDesc}>{e["data"]["description"]}</Text>
+            <View style={styles.single}>
+              <View style={{ paddingLeft: 5 }}>
+                <Text style={styles.singleText}>{e["data"]["topic"]}</Text>
+                <Text style={styles.singleDesc}>
+                  {e["data"]["description"]}
+                </Text>
 
-              <Text style={styles.singleVotes}>
-                <Text style={{ color: "green" }}>5 for | </Text>
-                <Text style={{ color: "red" }}>5 against</Text>
-              </Text>
+                <Text style={styles.singleVotes}>
+                  <Text style={{ color: "green" }}>5 for | </Text>
+                  <Text style={{ color: "red" }}>5 against</Text>
+                </Text>
+              </View>
             </View>
           </View>
         </Pressable>
       ))}
-    </View>
+    </ScrollView>
   );
 }
 
@@ -85,7 +94,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 50,
+    marginBottom: 30,
   },
   text: {
     fontFamily: "MulishBold",
@@ -97,17 +106,17 @@ const styles = StyleSheet.create({
     paddingRight: 20,
     display: "flex",
     flexDirection: "row",
-    alignItems:"center",
+    alignItems: "center",
   },
   single: {
-    marginBottom: 20,
+    marginBottom: 40,
     display: "flex",
     flexDirection: "row",
   },
   singleImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 50,
+    width: "100%",
+    height: 200,
+    borderRadius:10,
   },
   singleText: {
     fontFamily: "MulishBold",
@@ -121,5 +130,9 @@ const styles = StyleSheet.create({
     marginTop: 5,
     fontFamily: "Mulish",
     fontSize: 16,
+  },
+  mainSingle: {
+    display: "flex",
+    paddingRight: 20,
   },
 });

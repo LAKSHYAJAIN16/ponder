@@ -244,19 +244,23 @@ export default function TopicFocus({ route, navigation }) {
                           {reactionData[e["data"]["id"]] !== undefined && (
                             <>
                               <View style={styles.reactions}>
-                                <View style={styles.reaction}>
-                                  <Text style={{fontFamily:"MulishBold"}}>💩</Text>
-                                  <Text>
-                                    {reactionData[e["data"]["id"]].poop}
-                                  </Text>
-                                </View>
+                                {reactionData[e["data"]["id"]].poop !== 0 && (
+                                  <View style={styles.reaction}>
+                                    <Text>💩</Text>
+                                    <Text style={{ fontFamily: "MulishBold" }}>
+                                      {reactionData[e["data"]["id"]].poop}
+                                    </Text>
+                                  </View>
+                                )}
 
-                                <View style={styles.reaction}>
-                                  <Text style={{fontFamily:"MulishBold"}}>🧠</Text>
-                                  <Text>
-                                    {reactionData[e["data"]["id"]].smart}
-                                  </Text>
-                                </View>
+                                {reactionData[e["data"]["id"]].smart !== 0 && (
+                                  <View style={styles.reaction}>
+                                    <Text>🧠</Text>
+                                    <Text style={{ fontFamily: "MulishBold" }}>
+                                      {reactionData[e["data"]["id"]].smart}
+                                    </Text>
+                                  </View>
+                                )}
                               </View>
                             </>
                           )}
@@ -278,6 +282,33 @@ export default function TopicFocus({ route, navigation }) {
                       <Text style={{ ...styles.postBody, color: "grey" }}>
                         {e["data"]["msg"]["body"]}
                       </Text>
+                      {reactionData !== {} && (
+                        <>
+                          {reactionData[e["data"]["id"]] !== undefined && (
+                            <>
+                              <View style={styles.reactions}>
+                                {reactionData[e["data"]["id"]].poop !== 0 && (
+                                  <View style={styles.reaction}>
+                                    <Text>💩</Text>
+                                    <Text style={{ fontFamily: "MulishBold" }}>
+                                      {reactionData[e["data"]["id"]].poop}
+                                    </Text>
+                                  </View>
+                                )}
+
+                                {reactionData[e["data"]["id"]].smart !== 0 && (
+                                  <View style={styles.reaction}>
+                                    <Text>🧠</Text>
+                                    <Text style={{ fontFamily: "MulishBold" }}>
+                                      {reactionData[e["data"]["id"]].smart}
+                                    </Text>
+                                  </View>
+                                )}
+                              </View>
+                            </>
+                          )}
+                        </>
+                      )}
                     </View>
                   </>
                 )}
@@ -296,6 +327,33 @@ export default function TopicFocus({ route, navigation }) {
                       >
                         {e["data"]["msg"]["body"]}
                       </Text>
+                      {reactionData !== {} && (
+                        <>
+                          {reactionData[e["data"]["id"]] !== undefined && (
+                            <>
+                              <View style={{...styles.reactions, marginLeft:width / 1.7}}>
+                                {reactionData[e["data"]["id"]].poop !== 0 && (
+                                  <View style={styles.reaction}>
+                                    <Text>💩</Text>
+                                    <Text style={{ fontFamily: "MulishBold" }}>
+                                      {reactionData[e["data"]["id"]].poop}
+                                    </Text>
+                                  </View>
+                                )}
+
+                                {reactionData[e["data"]["id"]].smart !== 0 && (
+                                  <View style={styles.reaction}>
+                                    <Text>🧠</Text>
+                                    <Text style={{ fontFamily: "MulishBold" }}>
+                                      {reactionData[e["data"]["id"]].smart}
+                                    </Text>
+                                  </View>
+                                )}
+                              </View>
+                            </>
+                          )}
+                        </>
+                      )}
                     </View>
                     <Image
                       style={{ ...styles.postPfpic, marginLeft: 7 }}
@@ -489,16 +547,17 @@ const styles = StyleSheet.create({
   reactions: {
     display: "flex",
     flexDirection: "row",
-    marginTop:3,
+    marginTop: 3,
+    marginLeft:5
   },
   reaction: {
     display: "flex",
     flexDirection: "row",
-    borderRadius:100,
-    borderColor:"black",
-    borderWidth:1,
-    paddingLeft:3,
-    paddingRight:3,
-    marginRight:2,
+    borderRadius: 100,
+    // borderColor:"black",
+    // borderWidth:1,
+    paddingLeft: 3,
+    paddingRight: 3,
+    marginRight: 2,
   },
 });
