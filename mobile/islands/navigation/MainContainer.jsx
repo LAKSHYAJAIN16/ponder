@@ -8,11 +8,13 @@ import HomeScreen from "./screens/HomeScreen";
 import TopicsScreen from "./screens/TopicsScreen";
 import NotificationsScreen from "./screens/NotificationsScreen";
 import CreateTopic from "../independent/CreateTopic";
+import UserScreen from "./screens/UserScreen";
 
 //Screen names
 const homeName = "home";
 const createName = "debate";
 const notificationsName = "notifications";
+const userName = "user";
 
 const Tab = createBottomTabNavigator();
 
@@ -43,7 +45,7 @@ function MainContainer() {
               return <></>;
             }
           },
-          tabBarHideOnKeyboard: true
+          tabBarHideOnKeyboard: true,
         })}
         tabBarOptions={{
           activeTintColor: "#A03E99",
@@ -54,7 +56,6 @@ function MainContainer() {
             fontFamily: "MulishBold",
           },
         }}
-
       >
         <Tab.Screen
           name={homeName}

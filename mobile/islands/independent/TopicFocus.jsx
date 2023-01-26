@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, Children } from "react";
 import {
   Text,
   View,
@@ -51,6 +51,7 @@ export default function TopicFocus({ route, navigation }) {
       // Textual Data
       queryGet(
         (data) => {
+          console.log(data.data);
           setPosts(data.data);
         },
         (data) => {
@@ -63,11 +64,11 @@ export default function TopicFocus({ route, navigation }) {
       //Votes
       queryGet(
         (data) => {
-          console.log(data);
+          // console.log(data);
           setVoteData(data);
         },
         (data) => {
-          console.log(data);
+          // console.log(data);
           setVoteData(data);
         },
         `${t["data"]["id"]}~voteData`,
@@ -152,7 +153,24 @@ export default function TopicFocus({ route, navigation }) {
           api.route + "/reactions/create",
           payload_1
         );
-        console.log(doc_1.data);
+
+        //Send Notification
+        const notif_1 = {
+          temp : {
+            username : user.data.username,
+            pfpic : user.data.pfpic,
+            topic : topic["data"]["topic"],
+          },
+          target : post["data"]["user"]["@ref"].id,
+          type : "poop",
+          topic: topic["data"]["id"],
+          post: post["data"]["id"],
+        };
+        const doc_3 = await axios.post(
+          api.route + "/notifications/brain-or-poop",
+          notif_1,
+        )
+        console.log(doc_3);
         break;
       case SWIPE_RIGHT:
         // Cool
@@ -167,6 +185,23 @@ export default function TopicFocus({ route, navigation }) {
           payload_2
         );
         console.log(doc_2.data);
+
+        //Send Notification
+        const notif_2 = {
+          temp : {
+            username : user.data.username,
+            pfpic : user.data.pfpic,
+            topic : topic["data"]["topic"],
+          },
+          target : post["data"]["user"]["@ref"].id,
+          type : "brain",
+          topic: topic["data"]["id"],
+          post: post["data"]["id"],
+        };
+        const doc_4 = await axios.post(
+          api.route + "/notifications/brain-or-poop",
+          notif_2,
+        )
         break;
     }
   };
@@ -190,6 +225,10 @@ export default function TopicFocus({ route, navigation }) {
         </View>
 
         {/* Main UI */}
+        <Image
+          source={{ uri: topic["data"]["img"] }}
+          style={styles.headImage}
+        ></Image>
         <Text style={styles.head}>{topic["data"]["topic"]}</Text>
         <Text style={styles.subHead}>{topic["data"]["description"]}</Text>
         <View style={{ ...styles.hFlex, marginTop: 3 }}>
@@ -314,7 +353,7 @@ export default function TopicFocus({ route, navigation }) {
                 )}
                 {e["data"]["msg"]["voteType"] === "against" && (
                   <>
-                    <View style={{ marginLeft: -15 }}>
+                    <View style={{ marginLeft:0}}>
                       <Text style={{ ...styles.postName, textAlign: "right" }}>
                         {e["data"]["temp"]["username"]}
                       </Text>
@@ -323,6 +362,7 @@ export default function TopicFocus({ route, navigation }) {
                           ...styles.postBody,
                           color: "red",
                           textAlign: "right",
+                          width:width * 0.75
                         }}
                       >
                         {e["data"]["msg"]["body"]}
@@ -331,7 +371,12 @@ export default function TopicFocus({ route, navigation }) {
                         <>
                           {reactionData[e["data"]["id"]] !== undefined && (
                             <>
-                              <View style={{...styles.reactions, marginLeft:width / 1.7}}>
+                              <View
+                                style={{
+                                  ...styles.reactions,
+                                  marginLeft: width / 1.7,
+                                }}
+                              >
                                 {reactionData[e["data"]["id"]].poop !== 0 && (
                                   <View style={styles.reaction}>
                                     <Text>💩</Text>
@@ -365,76 +410,76 @@ export default function TopicFocus({ route, navigation }) {
             </GestureRecognizer>
           ))}
         </View>
-
-        {/* Vote / Write Your Opinion */}
-        <View style={{ ...styles.bottom }}>
-          <View style={{ ...styles.hFlex }}>
-            {stateOfInput === 0 && (
-              <>
-                <AppButton
-                  color={convertNomenToColors("yellow")}
-                  title="choose your stance"
-                  onPress={() => setStateOfInput(1)}
-                ></AppButton>
-              </>
-            )}
-            {stateOfInput === 1 && (
-              <View>
-                <AppButton
-                  color={convertNomenToColors("green")}
-                  title="for"
-                  onPress={() => vote("for")}
-                  style={{ marginBottom: 10 }}
-                ></AppButton>
-                <AppButton
-                  color={convertNomenToColors("grey")}
-                  title="neutral"
-                  onPress={() => vote("neutral")}
-                  style={{ marginBottom: 10 }}
-                ></AppButton>
-                <AppButton
-                  color={convertNomenToColors("red")}
-                  title="against"
-                  onPress={() => vote("against")}
-                  style={{ marginBottom: 10 }}
-                ></AppButton>
-              </View>
-            )}
-            {stateOfInput === 2 && (
-              <View
-                style={{
-                  ...styles.hFlex,
-                  backgroundColor: "lightgray",
-                  paddingLeft: 10,
-                  paddingRight: 10,
-                  borderRadius: 25,
-                  height: 50,
-                }}
-              >
-                <Image
-                  source={{ uri: user["data"]["pfpic"] }}
-                  style={styles.userPfpic}
-                />
-                <View style={{ ...styles.hFlex }}>
-                  <TextInput
-                    placeholder="Share your views"
-                    style={styles.textInputShare}
-                    multiline={true}
-                    ref={textInput}
-                    onChangeText={(text) => setMessage(text)}
-                  ></TextInput>
-                  <Text
-                    style={styles.textInputPostButton}
-                    onPress={() => post()}
-                  >
-                    Post
-                  </Text>
-                </View>
-              </View>
-            )}
-          </View>
-        </View>
       </ScrollView>
+
+      {/* Vote / Write Your Opinion */}
+      <View style={{ ...styles.bottom }}>
+        <View style={{ ...styles.hFlex }}>
+          {stateOfInput === 0 && (
+            <>
+              <AppButton
+                color={convertNomenToColors("yellow")}
+                title="choose your stance"
+                onPress={() => setStateOfInput(1)}
+              ></AppButton>
+            </>
+          )}
+          {stateOfInput === 1 && (
+            <View>
+              <AppButton
+                color={convertNomenToColors("green")}
+                title="for"
+                onPress={() => vote("for")}
+                style={{ marginBottom: 10 }}
+              ></AppButton>
+              <AppButton
+                color={convertNomenToColors("grey")}
+                title="neutral"
+                onPress={() => vote("neutral")}
+                style={{ marginBottom: 10 }}
+              ></AppButton>
+              <AppButton
+                color={convertNomenToColors("red")}
+                title="against"
+                onPress={() => vote("against")}
+                style={{ marginBottom: 10 }}
+              ></AppButton>
+            </View>
+          )}
+          {stateOfInput === 2 && (
+            <View
+              style={{
+                ...styles.hFlex,
+                backgroundColor: "lightgray",
+                paddingLeft: 10,
+                paddingRight: 10,
+                borderRadius: 25,
+                height: 50,
+              }}
+            >
+              <Image
+                source={{ uri: user["data"]["pfpic"] }}
+                style={styles.userPfpic}
+              />
+              <View style={{ ...styles.hFlex }}>
+                <TextInput
+                  placeholder="Share your views"
+                  style={styles.textInputShare}
+                  multiline={true}
+                  ref={textInput}
+                  onChangeText={(text) => setMessage(text)}
+                ></TextInput>
+                <Pressable
+                  style={styles.textInputPostButton}
+                  onPress={() => post()}
+                >
+                  <Text style={styles.textInputPostButton}>Post</Text>
+                </Pressable>
+              </View>
+            </View>
+          )}
+        </View>
+      </View>
     </>
   );
 }
@@ -445,6 +490,7 @@ const styles = StyleSheet.create({
     paddingRight: 20,
     marginTop: 50,
     flex: 1,
+    zIndex: 100000,
   },
   text: {
     fontFamily: "MulishBold",
@@ -456,11 +502,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
+  headImage: {
+    width: "100%",
+    height: 200,
+    marginTop: 30,
+    borderRadius: 10,
+  },
   head: {
     fontFamily: "MulishBold",
     textTransform: "lowercase",
     fontSize: 30,
-    marginTop: 30,
   },
   subHead: {
     fontFamily: "Mulish",
@@ -491,13 +542,12 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   bottom: {
-    justifyContent: "flex-end",
-    marginTop: 10,
-    marginBottom: 10,
-    flex: 1,
-    justifyContent: "center",
-    alignContent: "center",
+    display: "flex",
     flexDirection: "row",
+    justifyContent: "center",
+    backgroundColor: "rgba(10,0,10, 0)",
+    background: "none",
+    zIndex: 1,
   },
   userPfpic: {
     width: 30,
@@ -548,7 +598,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     marginTop: 3,
-    marginLeft:5
+    marginLeft: 5,
   },
   reaction: {
     display: "flex",

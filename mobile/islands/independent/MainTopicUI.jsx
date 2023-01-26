@@ -9,6 +9,7 @@ import {
   ScrollView,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import ls from "../../lib/ls";
 import queryGet from "../../lib/queryGet";
 
 export default function MainTopicUI({ navigation }) {
@@ -22,6 +23,7 @@ export default function MainTopicUI({ navigation }) {
   const fetch = async () => {
     queryGet(
       (data) => {
+        console.log(data["data"]);
         setTopics(data["data"]);
       },
       (data) => {
@@ -73,7 +75,7 @@ export default function MainTopicUI({ navigation }) {
                 </Text>
 
                 <Text style={styles.singleVotes}>
-                  <Text style={{ color: "green" }}>5 for | </Text>
+                  <Text style={{ color: "green" }}>5 for</Text>
                   <Text style={{ color: "red" }}>5 against</Text>
                 </Text>
               </View>
@@ -116,7 +118,7 @@ const styles = StyleSheet.create({
   singleImage: {
     width: "100%",
     height: 200,
-    borderRadius:10,
+    borderRadius: 10,
   },
   singleText: {
     fontFamily: "MulishBold",

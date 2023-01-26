@@ -23,6 +23,7 @@ export default async function handler(req, res){
                 data:payload,
               })
         )
+
         res.json(doc)
     }
     catch(err){
