@@ -7,10 +7,16 @@ export default async function handler(req, res) {
 
   //Payload
   const id = genRandomID(18);
-  const text = `${req.body.temp.username} ${req.body.type}ed your comment!`;
+  let text = "";
+  if(req.body.type === "poop"){
+    text = `${req.body.temp.username} pooped💩 your comment!`;
+  }
+  else{
+    text = `${req.body.temp.username} brained🧠 your comment!`;
+  }
   const notif = {
     id: id,
-    user: Ref(Collection("users"), req.body.target),
+    targets: [req.body.target],
     type: "brain-or-poop",
     text: text,
     specificData: {
@@ -21,6 +27,7 @@ export default async function handler(req, res) {
       username: req.body.temp.username,
       pfpic: req.body.temp.pfpic,
       topic: req.body.temp.topic,
+      buf : req.body.temp.buf,
     },
     toc: Date.now(),
   };
