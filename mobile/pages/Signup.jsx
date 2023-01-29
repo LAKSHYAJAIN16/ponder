@@ -7,7 +7,7 @@ import BreakLine from "../components/BreakLine";
 import api from "../lib/api";
 import ls from "../lib/ls";
 
-export default function SignupPage({ updateState, path, cur }) {
+export default function SignupPage({ navigation }) {
   const [phone, setPhone] = useState("");
   const [username, setUsername] = useState("");
   const [uiState, setUiState] = useState(0);
@@ -18,14 +18,14 @@ export default function SignupPage({ updateState, path, cur }) {
     setUiState(1);
   }
 
-  async function finishSignup(){
+  async function finishSignup() {
     const payload = {
-      username : username,
-      phone : phone,
-    }
+      username: username,
+      phone: phone,
+    };
 
     //Send to API!
-    try{
+    try {
       const res = await axios.post(`${api.route}/users/create`, payload);
       console.log(res.data);
 
@@ -34,58 +34,55 @@ export default function SignupPage({ updateState, path, cur }) {
       await ls.edit("logged", "1");
 
       //Forward to signup page
-      updateState("/main");
-    }
-    catch(err){
+      navigation.navigate("Main");
+    } catch (err) {
       console.log(err);
     }
   }
 
   return (
     <>
-      {cur === path && (
-        <View style={styles.container}>
-          <Text style={styles.text}>signup</Text>
-          <BreakLine />
-          {uiState === 0 && (
-            <>
-              <TextInput
-                placeholder="enter phone number"
-                style={styles.input}
-                onChangeText={(newText) => setPhone(newText)}
-              ></TextInput>
-              <BreakLine />
-              <AppButton
-                color={convertNomenToColors("yellow")}
-                title="verify phone number"
-                onPress={() => verifyPhoneNumber()}
-              ></AppButton>
-            </>
-          )}
+      <View style={styles.container}>
+        <Text style={styles.text}>signup</Text>
+        <BreakLine />
+        {uiState === 0 && (
+          <>
+            <TextInput
+              placeholder="enter phone number"
+              style={styles.input}
+              onChangeText={(newText) => setPhone(newText)}
+            ></TextInput>
+            <BreakLine />
+            <AppButton
+              color={convertNomenToColors("yellow")}
+              title="verify phone number"
+              onPress={() => verifyPhoneNumber()}
+            ></AppButton>
+          </>
+        )}
 
-          {uiState === 1 && (
-            <>
-              <Image
-                source={{
-                  uri: `https://avatars.dicebear.com/api/adventurer-neutral/${phone}.png`,
-                }}
-                style={styles.profpic}
-              ></Image>
-              <TextInput
-                placeholder="enter username"
-                style={styles.input}
-                onChangeText={(newText) => setUsername(newText)}
-              ></TextInput>
-              <BreakLine />
-              <AppButton
-                color={convertNomenToColors("yellow")}
-                title="finish signup"
-                onPress={() => finishSignup()}
-              ></AppButton>
-            </>
-          )}
-        </View>
-      )}
+        {uiState === 1 && (
+          <>
+            <Image
+              source={{
+                uri: `https://avatars.dicebear.com/api/adventurer-neutral/${phone}.png`,
+              }}
+              style={styles.profpic}
+            ></Image>
+            <TextInput
+              placeholder="enter username"
+              style={styles.input}
+              onChangeText={(newText) => setUsername(newText)}
+            ></TextInput>
+            <BreakLine />
+            <AppButton
+              color={convertNomenToColors("yellow")}
+              title="finish signup"
+              onPress={() => finishSignup()}
+            ></AppButton>
+          </>
+        )}
+      </View>
     </>
   );
 }
@@ -114,9 +111,9 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontFamily: "Mulish",
   },
-  profpic : {
+  profpic: {
     width: 100,
     height: 100,
-    borderRadius:25,
-  }
+    borderRadius: 25,
+  },
 });

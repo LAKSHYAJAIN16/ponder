@@ -51,8 +51,8 @@ export default function TopicFocus({ route, navigation }) {
       // Textual Data
       queryGet(
         (data) => {
-          console.log(data.data);
-          setPosts(data.data);
+          // console.log(data.data);
+          // setPosts(data.data);
         },
         (data) => {
           setPosts(data.data);
@@ -592,8 +592,8 @@ const styles = StyleSheet.create({
     fontFamily: "MulishBold",
   },
   postBody: {
-    fontFamily: "Mulish",
-    fontSize: 17,
+    fontFamily: "MulishBold",
+    fontSize: 13.5,
     width: width * 0.8,
   },
   reactions: {

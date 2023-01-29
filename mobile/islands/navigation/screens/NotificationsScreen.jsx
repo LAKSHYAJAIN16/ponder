@@ -20,10 +20,11 @@ export default function NotificationsScreen({ navigation, route }) {
       console.log(f); 
       queryGet(
         (val) => {
-          setNotifs(sortNotifs(val.data));
+          // setNotifs(sortNotifs(val.data));
         },
         (val) => {
-          setNotifs(sortNotifs(val.data));
+          const sorted = sortNotifs(val.data);
+          setNotifs(sorted);
         },
         `notifications~${f["data"]["id"]}`,
         `/notifications/get?user=${f["ref"]["@ref"]["id"]}`
@@ -33,24 +34,8 @@ export default function NotificationsScreen({ navigation, route }) {
   }, []);
 
   const sortNotifs = (notifs) => {
-    let sortedNotifs = [], bufNotifs = [];
-    bufNotifs = notifs;
-    for (let i = 0; i < notifs.length; i++) {
-      let minDate = 293476283746283;
-      let f = 4;
-      for (let j = 0; j < bufNotifs.length; j++) {
-        const buf = bufNotifs[j];
-        if(buf["data"]["toc"] < minDate){
-          minDate = buf["data"]["toc"];
-          f = j
-        }
-      }
-
-      //Splice
-      sortedNotifs.push(bufNotifs[f]);
-      bufNotifs = bufNotifs.splice(f,1);
-    }
-    return notifs;
+    const f = notifs.sort((a, b) => a["data"]["toc"] < b["data"]["toc"]);
+    return f;
   }
   const redirect = (val) => {};
   return (
