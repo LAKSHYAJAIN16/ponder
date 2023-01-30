@@ -1,12 +1,13 @@
 import React, { useEffect } from "react";
 import axios from "axios";
+
 export default function AdminPanel() {
   useEffect(() => {
     //Get param
     const param = new URL(window.location).searchParams.get("admin");
     if (
       param !==
-      "983E12455436E662CB9E27FD32BBBBEC13A4F3D9C351F775E48A3DDF66223AC2BB7E55DF67"
+      process.env.NEXT_PUBLIC_ADMIN_KEY
     ) {
       window.location.replace("/");
     }
