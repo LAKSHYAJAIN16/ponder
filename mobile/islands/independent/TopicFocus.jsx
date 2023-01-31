@@ -19,15 +19,14 @@ import queryGet from "../../lib/queryGet";
 import GestureRecognizer, {
   swipeDirections,
 } from "react-native-swipe-gestures";
+import { Audio } from 'expo-av';
 
 const width = Dimensions.get("window").width;
 const height = Dimensions.get("window").height;
 export default function TopicFocus({ route, navigation }) {
-  const [topic, setTopic] = useState({ data: { temp: {} } });
-  const [voteData, setVoteData] = useState({
-    against: { num: 0 },
-    for: { num: 0 },
-    neutral: { num: 0 },
+  const [topic, setTopic] = useState({
+    doc: { data: { temp: {} } },
+    votes: {},
   });
   const [reactionData, setReactionData] = useState({});
   const [posts, setPosts] = useState([]);
@@ -37,10 +36,13 @@ export default function TopicFocus({ route, navigation }) {
   const [stateOfInput, setStateOfInput] = useState(0);
 
   const textInput = useRef();
+  const scrollViewRef = useRef();
+
+  const [likeSound, setLikeSound] = useState();
 
   useEffect(() => {
     const init = async () => {
-      //Topicc
+      //Topic
       const t = JSON.parse(route.params.topic);
       setTopic(t);
 
@@ -52,27 +54,15 @@ export default function TopicFocus({ route, navigation }) {
       queryGet(
         (data) => {
           // console.log(data.data);
-          // setPosts(data.data);
+          if (data.data) {
+            setPosts(data.data);
+          }
         },
         (data) => {
           setPosts(data.data);
         },
-        `${t["data"]["id"]}~postTextualData`,
-        `/votes/textual/get/topic?id=${t["data"]["id"]}`
-      );
-
-      //Votes
-      queryGet(
-        (data) => {
-          // console.log(data);
-          setVoteData(data);
-        },
-        (data) => {
-          // console.log(data);
-          setVoteData(data);
-        },
-        `${t["data"]["id"]}~voteData`,
-        `/votes/get/topic?id=${t["data"]["id"]}`
+        `${t["doc"]["data"]["id"]}~postTextualData`,
+        `/votes/textual/get/topic?id=${t["doc"]["data"]["id"]}`
       );
 
       // Poop and Smart
@@ -83,19 +73,27 @@ export default function TopicFocus({ route, navigation }) {
         (data) => {
           setReactionData(data);
         },
-        `${t["data"]["id"]}~postReactionData`,
-        `/reactions/getAllOnTopic?id=${t["data"]["id"]}`
+        `${t["doc"]["data"]["id"]}~postReactionData`,
+        `/reactions/getAllOnTopic?id=${t["doc"]["data"]["id"]}`
       );
+
       //View
       const payload = {
         user: us["data"]["id"],
-        topic: t["data"]["id"],
+        topic: t["doc"]["data"]["id"],
       };
 
       // const res = await axios.post(api.route + "/views/viewTopic", payload);
       // console.log("Registered View");
     };
     init();
+
+    return likeSound
+    ? () => {
+        console.log('Unloading Sound');
+        likeSound.unloadAsync();
+      }
+    : undefined;
   }, []);
 
   const post = async () => {
@@ -103,20 +101,24 @@ export default function TopicFocus({ route, navigation }) {
 
     //Assemble payload
     const payload = {
-      topicID: topic["data"]["id"],
+      topicID: topic["doc"]["data"]["id"],
       userID: user["data"]["id"],
       body: message,
       intent: stance,
       temp: {
         userPfpic: user["data"]["pfpic"],
         username: user["data"]["username"],
-        topicName: topic["data"]["topic"],
+        topicName: topic["doc"]["data"]["topic"],
       },
     };
 
     //Axios
     const res = await axios.post(api.route + "/votes/textual/post", payload);
     console.log(res.data);
+
+    //Add it to our posts
+    setPosts([...posts, res.data]);
+    scrollViewRef.current.scrollToEnd({ animated: true });
   };
 
   const vote = async (stancey) => {
@@ -127,16 +129,26 @@ export default function TopicFocus({ route, navigation }) {
     const payload = {
       intent: stancey,
       userID: user["data"]["id"],
-      topicID: topic["data"]["id"],
+      topicID: topic["doc"]["data"]["id"],
       temp: {
         userPfpic: user["data"]["pfpic"],
         username: user["data"]["username"],
-        topicName: topic["data"]["topic"],
+        topicName: topic["doc"]["data"]["topic"],
       },
     };
     const res = await axios.post(api.route + "/votes/vote", payload);
     console.log(res.data);
   };
+
+  async function playLike() {
+    console.log('Loading Sound');
+    const { sound } = await Audio.Sound.createAsync( require('./../../assets/like.wav')
+    );
+
+    setLikeSound(sound);
+    console.log('Playing Sound');
+    await sound.playAsync();
+  }
 
   const swipeCallback = async (gestureName, gestureState, post) => {
     const { SWIPE_UP, SWIPE_DOWN, SWIPE_LEFT, SWIPE_RIGHT } = swipeDirections;
@@ -145,7 +157,7 @@ export default function TopicFocus({ route, navigation }) {
         // Poop
         const payload_1 = {
           user: user.data.id,
-          topic: topic["data"]["id"],
+          topic: topic["doc"]["data"]["id"],
           post: post["data"]["id"],
           type: "poop",
         };
@@ -156,28 +168,29 @@ export default function TopicFocus({ route, navigation }) {
 
         //Send Notification
         const notif_1 = {
-          temp : {
-            username : user.data.username,
-            pfpic : user.data.pfpic,
-            topic : topic["data"]["topic"],
-            buf : post["data"]["msg"]["body"],
+          temp: {
+            username: user.data.username,
+            pfpic: user.data.pfpic,
+            topic: topic["doc"]["data"]["topic"],
+            buf: post["data"]["msg"]["body"],
           },
-          target : post["data"]["user"]["@ref"].id,
-          type : "poop",
-          topic: topic["data"]["id"],
+          target: post["data"]["user"]["@ref"].id,
+          type: "poop",
+          topic: topic["doc"]["data"]["id"],
           post: post["data"]["id"],
         };
         const doc_3 = await axios.post(
           api.route + "/notifications/brain-or-poop",
-          notif_1,
-        )
+          notif_1
+        );
         console.log(doc_3);
         break;
       case SWIPE_RIGHT:
         // Cool
+        await playLike();
         const payload_2 = {
           user: user.data.id,
-          topic: topic["data"]["id"],
+          topic: topic["doc"]["data"]["id"],
           post: post["data"]["id"],
           type: "smart",
         };
@@ -189,21 +202,21 @@ export default function TopicFocus({ route, navigation }) {
 
         //Send Notification
         const notif_2 = {
-          temp : {
-            username : user.data.username,
-            pfpic : user.data.pfpic,
-            topic : topic["data"]["topic"],
-            buf : post["data"]["msg"]["body"],
+          temp: {
+            username: user.data.username,
+            pfpic: user.data.pfpic,
+            topic: topic["doc"]["data"]["topic"],
+            buf: post["data"]["msg"]["body"],
           },
-          target : post["data"]["user"]["@ref"].id,
-          type : "brain",
-          topic: topic["data"]["id"],
+          target: post["data"]["user"]["@ref"].id,
+          type: "brain",
+          topic: topic["doc"]["data"]["id"],
           post: post["data"]["id"],
         };
         const doc_4 = await axios.post(
           api.route + "/notifications/brain-or-poop",
-          notif_2,
-        )
+          notif_2
+        );
         break;
     }
   };
@@ -217,6 +230,7 @@ export default function TopicFocus({ route, navigation }) {
           justifyContent: "space-between",
           flexDirection: "column",
         }}
+        ref={scrollViewRef}
       >
         {/* Navbar boring */}
         <View style={styles.nav}>
@@ -228,11 +242,13 @@ export default function TopicFocus({ route, navigation }) {
 
         {/* Main UI */}
         <Image
-          source={{ uri: topic["data"]["img"] }}
+          source={{ uri: topic["doc"]["data"]["img"] }}
           style={styles.headImage}
         ></Image>
-        <Text style={styles.head}>{topic["data"]["topic"]}</Text>
-        <Text style={styles.subHead}>{topic["data"]["description"]}</Text>
+        <Text style={styles.head}>{topic["doc"]["data"]["topic"]}</Text>
+        <Text style={styles.subHead}>
+          {topic["doc"]["data"]["description"]}
+        </Text>
         <View style={{ ...styles.hFlex, marginTop: 3 }}>
           {/* <Image
             style={styles.userImage}
@@ -246,14 +262,17 @@ export default function TopicFocus({ route, navigation }) {
 
         {/* For and Against Text */}
         <Text style={styles.action}>
-          <Text style={{ color: "green" }}>for {voteData.for.num} </Text>
+          <Text style={{ color: "green" }}>for {topic["votes"]["for"]} </Text>
           <Text>|</Text>
           <Text style={{ color: "grey" }}>
             {" "}
-            neutral {voteData.neutral.num}{" "}
+            neutral {topic["votes"]["neutral"]}{" "}
           </Text>
           <Text>|</Text>
-          <Text style={{ color: "red" }}> against {voteData.against.num} </Text>
+          <Text style={{ color: "red" }}>
+            {" "}
+            against {topic["votes"]["against"]}{" "}
+          </Text>
         </Text>
 
         {/* Actual Posts */}
@@ -275,7 +294,10 @@ export default function TopicFocus({ route, navigation }) {
                     />
                     <View style={styles.postRight}>
                       <Text style={styles.postName}>
-                        {e["data"]["temp"]["username"]}
+                        {e["data"]["temp"]["username"]}{" "}
+                        <Text style={styles.postDate}>
+                          {moment(new Date(e["ts"] / 1000)).fromNow()}
+                        </Text>
                       </Text>
                       <Text style={{ ...styles.postBody, color: "green" }}>
                         {e["data"]["msg"]["body"]}
@@ -319,6 +341,10 @@ export default function TopicFocus({ route, navigation }) {
                     <View style={styles.postRight}>
                       <Text style={styles.postName}>
                         {e["data"]["temp"]["username"]}
+                        <Text style={styles.postDate}>
+                          {" "}
+                          {moment(new Date(e["ts"] / 1000)).fromNow()}
+                        </Text>
                       </Text>
                       <Text style={{ ...styles.postBody, color: "grey" }}>
                         {e["data"]["msg"]["body"]}
@@ -355,8 +381,11 @@ export default function TopicFocus({ route, navigation }) {
                 )}
                 {e["data"]["msg"]["voteType"] === "against" && (
                   <>
-                    <View style={{ marginLeft:0}}>
+                    <View style={{ marginLeft: -15 }}>
                       <Text style={{ ...styles.postName, textAlign: "right" }}>
+                        <Text style={styles.postDate}>
+                          {moment(new Date(e["ts"] / 1000)).fromNow()}
+                        </Text>{" "}
                         {e["data"]["temp"]["username"]}
                       </Text>
                       <Text
@@ -364,7 +393,9 @@ export default function TopicFocus({ route, navigation }) {
                           ...styles.postBody,
                           color: "red",
                           textAlign: "right",
-                          width:width * 0.75
+                          width: width * 0.8,
+                          paddingLeft: 10,
+                          paddingRight: 10,
                         }}
                       >
                         {e["data"]["msg"]["body"]}
@@ -590,6 +621,10 @@ const styles = StyleSheet.create({
   },
   postName: {
     fontFamily: "MulishBold",
+  },
+  postDate: {
+    color: "grey",
+    fontSize: 8,
   },
   postBody: {
     fontFamily: "MulishBold",

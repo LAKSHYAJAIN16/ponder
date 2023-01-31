@@ -20,7 +20,7 @@ export default function NotificationsScreen({ navigation, route }) {
       console.log(f); 
       queryGet(
         (val) => {
-          // setNotifs(sortNotifs(val.data));
+          setNotifs(sortNotifs(val.data));
         },
         (val) => {
           const sorted = sortNotifs(val.data);

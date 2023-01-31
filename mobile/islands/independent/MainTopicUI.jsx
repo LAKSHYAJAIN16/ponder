@@ -23,11 +23,11 @@ export default function MainTopicUI({ navigation }) {
   const fetch = async () => {
     queryGet(
       (data) => {
-        console.log(data["data"]);
-        setTopics(data["data"]);
+        // console.log(data["data"]);
+        // setTopics(data["data"]);
       },
       (data) => {
-        setTopics(data["data"]);
+        setTopics(data);
       },
       "main-topics",
       "/topics/getAll"
@@ -64,19 +64,34 @@ export default function MainTopicUI({ navigation }) {
         <Pressable onPress={() => focus(e)}>
           <View style={styles.mainSingle}>
             <Image
-              source={{ uri: e["data"]["img"] }}
+              source={{ uri: e["doc"]["data"]["img"] }}
               style={styles.singleImage}
             />
             <View style={styles.single}>
               <View style={{ paddingLeft: 5 }}>
-                <Text style={styles.singleText}>{e["data"]["topic"]}</Text>
+                <Text style={styles.singleText}>
+                  {e["doc"]["data"]["topic"]}
+                </Text>
                 <Text style={styles.singleDesc}>
-                  {e["data"]["description"]}
+                  {e["doc"]["data"]["description"]}
                 </Text>
 
                 <Text style={styles.singleVotes}>
-                  <Text style={{ color: "green" }}>5 for</Text>
-                  <Text style={{ color: "red" }}>5 against</Text>
+                  {e["votes"]["for"] !== 0 && (
+                    <Text style={{ color: "green" }}>
+                      {e["votes"]["for"]} for.{" "}
+                    </Text>
+                  )}
+                  {e["votes"]["neutral"] !== 0 && (
+                    <Text style={{ color: "grey" }}>
+                      {e["votes"]["neutral"]} neutral.{" "}
+                    </Text>
+                  )}
+                  {e["votes"]["against"] !== 0 && (
+                    <Text style={{ color: "red" }}>
+                      {e["votes"]["against"]} against.{" "}
+                    </Text>
+                  )}
                 </Text>
               </View>
             </View>
