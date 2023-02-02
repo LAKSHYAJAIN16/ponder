@@ -23,8 +23,7 @@ export default function MainTopicUI({ navigation }) {
   const fetch = async () => {
     queryGet(
       (data) => {
-        // console.log(data["data"]);
-        // setTopics(data["data"]);
+        setTopics(data);
       },
       (data) => {
         setTopics(data);

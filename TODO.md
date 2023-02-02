@@ -5,3 +5,8 @@
 > add login and other paths after home screen (tick)
 > lol
 > add welcome notification
+> fit all of the $#!7 into one server or VPS
+> payments
+> business plan
+> audience recognition
+> custom GPT model
