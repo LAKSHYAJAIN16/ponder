@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, Children } from "react";
 import {
   Text,
   View,
@@ -16,15 +16,19 @@ import moment from "moment";
 import ls from "../../lib/ls";
 import AppButton, { convertNomenToColors } from "../../components/AppButton";
 import queryGet from "../../lib/queryGet";
+import GestureRecognizer, {
+  swipeDirections,
+} from "react-native-swipe-gestures";
+import { Audio } from 'expo-av';
 
 const width = Dimensions.get("window").width;
+const height = Dimensions.get("window").height;
 export default function TopicFocus({ route, navigation }) {
-  const [topic, setTopic] = useState({ data: { temp: {} } });
-  const [voteData, setVoteData] = useState({
-    against: { num: 0 },
-    for: { num: 0 },
-    neutral: { num: 0 },
+  const [topic, setTopic] = useState({
+    doc: { data: { temp: {} } },
+    votes: {},
   });
+  const [reactionData, setReactionData] = useState({});
   const [posts, setPosts] = useState([]);
   const [message, setMessage] = useState("");
   const [user, setUser] = useState({ data: {} });
@@ -32,10 +36,13 @@ export default function TopicFocus({ route, navigation }) {
   const [stateOfInput, setStateOfInput] = useState(0);
 
   const textInput = useRef();
+  const scrollViewRef = useRef();
+
+  const [likeSound, setLikeSound] = useState();
 
   useEffect(() => {
     const init = async () => {
-      //Topicc
+      //Topic
       const t = JSON.parse(route.params.topic);
       setTopic(t);
 
@@ -46,39 +53,47 @@ export default function TopicFocus({ route, navigation }) {
       // Textual Data
       queryGet(
         (data) => {
-          setPosts(data.data);
+          // console.log(data.data);
+          if (data.data) {
+            setPosts(data.data);
+          }
         },
         (data) => {
           setPosts(data.data);
         },
-        `${t["data"]["id"]}~postTextualData`,
-        `/votes/textual/get/topic?id=${t["data"]["id"]}`
+        `${t["doc"]["data"]["id"]}~postTextualData`,
+        `/votes/textual/get/topic?id=${t["doc"]["data"]["id"]}`
       );
 
-      //Votes
+      // Poop and Smart
       queryGet(
         (data) => {
-          console.log(data);
-          setVoteData(data);
+          setReactionData(data);
         },
         (data) => {
-          console.log(data);
-          setVoteData(data);
+          setReactionData(data);
         },
-        `${t["data"]["id"]}~voteData`,
-        `/votes/get/topic?id=${t["data"]["id"]}`
+        `${t["doc"]["data"]["id"]}~postReactionData`,
+        `/reactions/getAllOnTopic?id=${t["doc"]["data"]["id"]}`
       );
 
       //View
       const payload = {
         user: us["data"]["id"],
-        topic: t["data"]["id"],
+        topic: t["doc"]["data"]["id"],
       };
 
       // const res = await axios.post(api.route + "/views/viewTopic", payload);
       // console.log("Registered View");
     };
     init();
+
+    return likeSound
+    ? () => {
+        console.log('Unloading Sound');
+        likeSound.unloadAsync();
+      }
+    : undefined;
   }, []);
 
   const post = async () => {
@@ -86,20 +101,24 @@ export default function TopicFocus({ route, navigation }) {
 
     //Assemble payload
     const payload = {
-      topicID: topic["data"]["id"],
+      topicID: topic["doc"]["data"]["id"],
       userID: user["data"]["id"],
       body: message,
       intent: stance,
       temp: {
         userPfpic: user["data"]["pfpic"],
         username: user["data"]["username"],
-        topicName: topic["data"]["topic"],
+        topicName: topic["doc"]["data"]["topic"],
       },
     };
 
     //Axios
     const res = await axios.post(api.route + "/votes/textual/post", payload);
     console.log(res.data);
+
+    //Add it to our posts
+    setPosts([...posts, res.data]);
+    scrollViewRef.current.scrollToEnd({ animated: true });
   };
 
   const vote = async (stancey) => {
@@ -110,20 +129,109 @@ export default function TopicFocus({ route, navigation }) {
     const payload = {
       intent: stancey,
       userID: user["data"]["id"],
-      topicID: topic["data"]["id"],
+      topicID: topic["doc"]["data"]["id"],
       temp: {
         userPfpic: user["data"]["pfpic"],
         username: user["data"]["username"],
-        topicName: topic["data"]["topic"],
+        topicName: topic["doc"]["data"]["topic"],
       },
     };
     const res = await axios.post(api.route + "/votes/vote", payload);
     console.log(res.data);
   };
 
+  async function playLike() {
+    console.log('Loading Sound');
+    const { sound } = await Audio.Sound.createAsync( require('./../../assets/like.wav')
+    );
+
+    setLikeSound(sound);
+    console.log('Playing Sound');
+    await sound.playAsync();
+  }
+
+  const swipeCallback = async (gestureName, gestureState, post) => {
+    const { SWIPE_UP, SWIPE_DOWN, SWIPE_LEFT, SWIPE_RIGHT } = swipeDirections;
+    switch (gestureName) {
+      case SWIPE_LEFT:
+        // Poop
+        const payload_1 = {
+          user: user.data.id,
+          topic: topic["doc"]["data"]["id"],
+          post: post["data"]["id"],
+          type: "poop",
+        };
+        const doc_1 = await axios.post(
+          api.route + "/reactions/create",
+          payload_1
+        );
+
+        //Send Notification
+        const notif_1 = {
+          temp: {
+            username: user.data.username,
+            pfpic: user.data.pfpic,
+            topic: topic["doc"]["data"]["topic"],
+            buf: post["data"]["msg"]["body"],
+          },
+          target: post["data"]["user"]["@ref"].id,
+          type: "poop",
+          topic: topic["doc"]["data"]["id"],
+          post: post["data"]["id"],
+        };
+        const doc_3 = await axios.post(
+          api.route + "/notifications/brain-or-poop",
+          notif_1
+        );
+        console.log(doc_3);
+        break;
+      case SWIPE_RIGHT:
+        // Cool
+        await playLike();
+        const payload_2 = {
+          user: user.data.id,
+          topic: topic["doc"]["data"]["id"],
+          post: post["data"]["id"],
+          type: "smart",
+        };
+        const doc_2 = await axios.post(
+          api.route + "/reactions/create",
+          payload_2
+        );
+        console.log(doc_2.data);
+
+        //Send Notification
+        const notif_2 = {
+          temp: {
+            username: user.data.username,
+            pfpic: user.data.pfpic,
+            topic: topic["doc"]["data"]["topic"],
+            buf: post["data"]["msg"]["body"],
+          },
+          target: post["data"]["user"]["@ref"].id,
+          type: "brain",
+          topic: topic["doc"]["data"]["id"],
+          post: post["data"]["id"],
+        };
+        const doc_4 = await axios.post(
+          api.route + "/notifications/brain-or-poop",
+          notif_2
+        );
+        break;
+    }
+  };
+
   return (
     <>
-      <View style={styles.main}>
+      <ScrollView
+        style={styles.main}
+        contentContainerStyle={{
+          flexGrow: 1,
+          justifyContent: "space-between",
+          flexDirection: "column",
+        }}
+        ref={scrollViewRef}
+      >
         {/* Navbar boring */}
         <View style={styles.nav}>
           <Pressable onPress={() => navigation.navigate("Main")}>
@@ -133,8 +241,14 @@ export default function TopicFocus({ route, navigation }) {
         </View>
 
         {/* Main UI */}
-        <Text style={styles.head}>{topic["data"]["topic"]}</Text>
-        <Text style={styles.subHead}>{topic["data"]["description"]}</Text>
+        <Image
+          source={{ uri: topic["doc"]["data"]["img"] }}
+          style={styles.headImage}
+        ></Image>
+        <Text style={styles.head}>{topic["doc"]["data"]["topic"]}</Text>
+        <Text style={styles.subHead}>
+          {topic["doc"]["data"]["description"]}
+        </Text>
         <View style={{ ...styles.hFlex, marginTop: 3 }}>
           {/* <Image
             style={styles.userImage}
@@ -148,80 +262,192 @@ export default function TopicFocus({ route, navigation }) {
 
         {/* For and Against Text */}
         <Text style={styles.action}>
-          <Text style={{ color: "green" }}>for {voteData.for.num} </Text>
+          <Text style={{ color: "green" }}>for {topic["votes"]["for"]} </Text>
           <Text>|</Text>
           <Text style={{ color: "grey" }}>
             {" "}
-            neutral {voteData.neutral.num}{" "}
+            neutral {topic["votes"]["neutral"]}{" "}
           </Text>
           <Text>|</Text>
-          <Text style={{ color: "red" }}> against {voteData.against.num} </Text>
+          <Text style={{ color: "red" }}>
+            {" "}
+            against {topic["votes"]["against"]}{" "}
+          </Text>
         </Text>
 
         {/* Actual Posts */}
         <View style={styles.postsMain}>
           {posts.map((e) => (
-            <View style={styles.postAct}>
-              {e["data"]["msg"]["voteType"] === "for" && (
-                <>
-                  <Image
-                    style={styles.postPfpic}
-                    source={{ uri: e["data"]["temp"]["userPfpic"] }}
-                  />
-                  <View style={styles.postRight}>
-                    <Text style={styles.postName}>
-                      {e["data"]["temp"]["username"]}
-                    </Text>
-                    <Text style={{ ...styles.postBody, color: "green" }}>
-                      {e["data"]["msg"]["body"]}
-                    </Text>
-                  </View>
-                </>
-              )}
-              {e["data"]["msg"]["voteType"] === "neutral" && (
-                <>
-                  <Image
-                    style={styles.postPfpic}
-                    source={{ uri: e["data"]["temp"]["userPfpic"] }}
-                  />
-                  <View style={styles.postRight}>
-                    <Text style={styles.postName}>
-                      {e["data"]["temp"]["username"]}
-                    </Text>
-                    <Text style={{ ...styles.postBody, color: "grey" }}>
-                      {e["data"]["msg"]["body"]}
-                    </Text>
-                  </View>
-                </>
-              )}
-              {e["data"]["msg"]["voteType"] === "against" && (
-                <>
-                  <View style={{marginLeft:45}}>
-                    <Text style={{ ...styles.postName, textAlign: "right" }}>
-                      {e["data"]["temp"]["username"]}
-                    </Text>
-                    <Text
-                      style={{
-                        ...styles.postBody,
-                        color: "red",
-                        textAlign: "right",
-                      }}
-                    >
-                      {e["data"]["msg"]["body"]}
-                    </Text>
-                  </View>
-                  <Image
-                    style={{ ...styles.postPfpic, marginLeft:7 }}
-                    source={{ uri: e["data"]["temp"]["userPfpic"] }}
-                  />
-                </>
-              )}
-            </View>
+            <GestureRecognizer
+              config={{
+                velocityThreshold: 0.3,
+                directionalOffsetThreshold: 80,
+              }}
+              onSwipe={(direction, state) => swipeCallback(direction, state, e)}
+            >
+              <View style={styles.postAct}>
+                {e["data"]["msg"]["voteType"] === "for" && (
+                  <>
+                    <Image
+                      style={styles.postPfpic}
+                      source={{ uri: e["data"]["temp"]["userPfpic"] }}
+                    />
+                    <View style={styles.postRight}>
+                      <Text style={styles.postName}>
+                        {e["data"]["temp"]["username"]}{" "}
+                        <Text style={styles.postDate}>
+                          {moment(new Date(e["ts"] / 1000)).fromNow()}
+                        </Text>
+                      </Text>
+                      <Text style={{ ...styles.postBody, color: "green" }}>
+                        {e["data"]["msg"]["body"]}
+                      </Text>
+                      {reactionData !== {} && (
+                        <>
+                          {reactionData[e["data"]["id"]] !== undefined && (
+                            <>
+                              <View style={styles.reactions}>
+                                {reactionData[e["data"]["id"]].poop !== 0 && (
+                                  <View style={styles.reaction}>
+                                    <Text>💩</Text>
+                                    <Text style={{ fontFamily: "MulishBold" }}>
+                                      {reactionData[e["data"]["id"]].poop}
+                                    </Text>
+                                  </View>
+                                )}
+
+                                {reactionData[e["data"]["id"]].smart !== 0 && (
+                                  <View style={styles.reaction}>
+                                    <Text>🧠</Text>
+                                    <Text style={{ fontFamily: "MulishBold" }}>
+                                      {reactionData[e["data"]["id"]].smart}
+                                    </Text>
+                                  </View>
+                                )}
+                              </View>
+                            </>
+                          )}
+                        </>
+                      )}
+                    </View>
+                  </>
+                )}
+                {e["data"]["msg"]["voteType"] === "neutral" && (
+                  <>
+                    <Image
+                      style={styles.postPfpic}
+                      source={{ uri: e["data"]["temp"]["userPfpic"] }}
+                    />
+                    <View style={styles.postRight}>
+                      <Text style={styles.postName}>
+                        {e["data"]["temp"]["username"]}
+                        <Text style={styles.postDate}>
+                          {" "}
+                          {moment(new Date(e["ts"] / 1000)).fromNow()}
+                        </Text>
+                      </Text>
+                      <Text style={{ ...styles.postBody, color: "grey" }}>
+                        {e["data"]["msg"]["body"]}
+                      </Text>
+                      {reactionData !== {} && (
+                        <>
+                          {reactionData[e["data"]["id"]] !== undefined && (
+                            <>
+                              <View style={styles.reactions}>
+                                {reactionData[e["data"]["id"]].poop !== 0 && (
+                                  <View style={styles.reaction}>
+                                    <Text>💩</Text>
+                                    <Text style={{ fontFamily: "MulishBold" }}>
+                                      {reactionData[e["data"]["id"]].poop}
+                                    </Text>
+                                  </View>
+                                )}
+
+                                {reactionData[e["data"]["id"]].smart !== 0 && (
+                                  <View style={styles.reaction}>
+                                    <Text>🧠</Text>
+                                    <Text style={{ fontFamily: "MulishBold" }}>
+                                      {reactionData[e["data"]["id"]].smart}
+                                    </Text>
+                                  </View>
+                                )}
+                              </View>
+                            </>
+                          )}
+                        </>
+                      )}
+                    </View>
+                  </>
+                )}
+                {e["data"]["msg"]["voteType"] === "against" && (
+                  <>
+                    <View style={{ marginLeft: -15 }}>
+                      <Text style={{ ...styles.postName, textAlign: "right" }}>
+                        <Text style={styles.postDate}>
+                          {moment(new Date(e["ts"] / 1000)).fromNow()}
+                        </Text>{" "}
+                        {e["data"]["temp"]["username"]}
+                      </Text>
+                      <Text
+                        style={{
+                          ...styles.postBody,
+                          color: "red",
+                          textAlign: "right",
+                          width: width * 0.8,
+                          paddingLeft: 10,
+                          paddingRight: 10,
+                        }}
+                      >
+                        {e["data"]["msg"]["body"]}
+                      </Text>
+                      {reactionData !== {} && (
+                        <>
+                          {reactionData[e["data"]["id"]] !== undefined && (
+                            <>
+                              <View
+                                style={{
+                                  ...styles.reactions,
+                                  marginLeft: width / 1.7,
+                                }}
+                              >
+                                {reactionData[e["data"]["id"]].poop !== 0 && (
+                                  <View style={styles.reaction}>
+                                    <Text>💩</Text>
+                                    <Text style={{ fontFamily: "MulishBold" }}>
+                                      {reactionData[e["data"]["id"]].poop}
+                                    </Text>
+                                  </View>
+                                )}
+
+                                {reactionData[e["data"]["id"]].smart !== 0 && (
+                                  <View style={styles.reaction}>
+                                    <Text>🧠</Text>
+                                    <Text style={{ fontFamily: "MulishBold" }}>
+                                      {reactionData[e["data"]["id"]].smart}
+                                    </Text>
+                                  </View>
+                                )}
+                              </View>
+                            </>
+                          )}
+                        </>
+                      )}
+                    </View>
+                    <Image
+                      style={{ ...styles.postPfpic, marginLeft: 7 }}
+                      source={{ uri: e["data"]["temp"]["userPfpic"] }}
+                    />
+                  </>
+                )}
+              </View>
+            </GestureRecognizer>
           ))}
         </View>
+      </ScrollView>
 
-        {/* Vote / Write Your Opinion */}
-        <View style={{ ...styles.bottom }}>
+      {/* Vote / Write Your Opinion */}
+      <View style={{ ...styles.bottom }}>
+        <View style={{ ...styles.hFlex }}>
           {stateOfInput === 0 && (
             <>
               <AppButton
@@ -254,12 +480,21 @@ export default function TopicFocus({ route, navigation }) {
             </View>
           )}
           {stateOfInput === 2 && (
-            <View style={styles.hFlex}>
+            <View
+              style={{
+                ...styles.hFlex,
+                backgroundColor: "lightgray",
+                paddingLeft: 10,
+                paddingRight: 10,
+                borderRadius: 25,
+                height: 50,
+              }}
+            >
               <Image
                 source={{ uri: user["data"]["pfpic"] }}
                 style={styles.userPfpic}
               />
-              <View style={styles.hFlex}>
+              <View style={{ ...styles.hFlex }}>
                 <TextInput
                   placeholder="Share your views"
                   style={styles.textInputShare}
@@ -267,9 +502,12 @@ export default function TopicFocus({ route, navigation }) {
                   ref={textInput}
                   onChangeText={(text) => setMessage(text)}
                 ></TextInput>
-                <Text style={styles.textInputPostButton} onPress={() => post()}>
-                  Post
-                </Text>
+                <Pressable
+                  style={styles.textInputPostButton}
+                  onPress={() => post()}
+                >
+                  <Text style={styles.textInputPostButton}>Post</Text>
+                </Pressable>
               </View>
             </View>
           )}
@@ -285,6 +523,7 @@ const styles = StyleSheet.create({
     paddingRight: 20,
     marginTop: 50,
     flex: 1,
+    zIndex: 100000,
   },
   text: {
     fontFamily: "MulishBold",
@@ -296,11 +535,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
+  headImage: {
+    width: "100%",
+    height: 200,
+    marginTop: 30,
+    borderRadius: 10,
+  },
   head: {
     fontFamily: "MulishBold",
     textTransform: "lowercase",
     fontSize: 30,
-    marginTop: 30,
   },
   subHead: {
     fontFamily: "Mulish",
@@ -331,10 +575,12 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   bottom: {
-    flex: 1,
-    justifyContent: "flex-end",
-    paddingBottom: 10,
-    paddingRight: 10,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center",
+    backgroundColor: "rgba(10,0,10, 0)",
+    background: "none",
+    zIndex: 1,
   },
   userPfpic: {
     width: 30,
@@ -345,9 +591,9 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     fontFamily: "MulishBold",
     color: convertNomenToColors("yellow"),
-    minWidth: width * 0.7,
-    width: width * 0.7,
-    maxWidth: width * 0.7,
+    minWidth: width * 0.65,
+    width: width * 0.65,
+    maxWidth: width * 0.65,
   },
   textInputPostButton: {
     fontFamily: "MulishBold",
@@ -358,9 +604,9 @@ const styles = StyleSheet.create({
     fontFamily: "MulishBold",
   },
   postAct: {
+    paddingTop: 10,
     display: "flex",
     flexDirection: "row",
-    marginBottom:20,
   },
   postPfpic: {
     width: 40,
@@ -376,9 +622,29 @@ const styles = StyleSheet.create({
   postName: {
     fontFamily: "MulishBold",
   },
+  postDate: {
+    color: "grey",
+    fontSize: 8,
+  },
   postBody: {
-    fontFamily: "Mulish",
-    fontSize: 17,
-    width:width * 0.8,
+    fontFamily: "MulishBold",
+    fontSize: 13.5,
+    width: width * 0.8,
+  },
+  reactions: {
+    display: "flex",
+    flexDirection: "row",
+    marginTop: 3,
+    marginLeft: 5,
+  },
+  reaction: {
+    display: "flex",
+    flexDirection: "row",
+    borderRadius: 100,
+    // borderColor:"black",
+    // borderWidth:1,
+    paddingLeft: 3,
+    paddingRight: 3,
+    marginRight: 2,
   },
 });

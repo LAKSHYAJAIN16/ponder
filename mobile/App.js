@@ -40,6 +40,16 @@ export default function App() {
           component={MainPage}
           options={{ headerShown: false }}
         />
+        <Stack.Screen
+          name="Signup"
+          component={SignupPage}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Landing"
+          component={LandingPage}
+          options={{ headerShown: false }}
+        />
         {/* <HomePage
           cur={currentNavigation}
           updateState={updateNavigation}

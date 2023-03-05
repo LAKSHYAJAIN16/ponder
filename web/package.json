@@ -10,8 +10,11 @@
     "ngrok": "ngrok http 1900 --authtoken 2JwKvT7lay4kGL9utq5OXRZnHg5_4621fzHSqwf6M6Myhyfra"
   },
   "dependencies": {
+    "axios": "^1.2.4",
+    "chatgpt": "^3.5.2",
     "faunadb": "^4.7.1",
     "next": "13.1.1",
+    "openai": "^3.1.0",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   },

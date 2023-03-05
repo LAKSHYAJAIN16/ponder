@@ -2,8 +2,8 @@ import fauna from "faunadb";
 
 const getClient = () => {
     const client = new fauna.Client({
-      secret: "fnAE5jdXvoACWt-9gZd7ctdH1GiTBT4fdNO5sHgw",
-      domain: "db.us.fauna.com",
+      secret: process.env.NEXT_PUBLIC_FAUNA_SECRET,
+      domain: process.env.NEXT_PUBLIC_FAUNA_DOMAIN,
     });
     return client;
   };

@@ -31,3 +31,10 @@ export async function queryGetLocalOnly(localCallback, id) {
     localCallback(lastCache);
   }
 }
+
+export async function simpleRetrieve(id){
+  const lastCache = await ls.get(id, true);
+  if (lastCache) {
+    return lastCache;
+  }
+}

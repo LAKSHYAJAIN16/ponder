@@ -38,7 +38,7 @@ export default function HomePage({ navigation }) {
             title={"Start Now"}
             color={convertNomenToColors("yellow")}
             style={styles.button}
-            onPress={() => updateState("/landing")}
+            onPress={() => navigation.navigate("Landing")}
           ></AppButton>
         </View>
     </>
