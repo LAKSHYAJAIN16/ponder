@@ -64,3 +64,5 @@ async def scrape_alternet_media(debug=False, save=True):
 
     if save == True:
         save_file(return_obj, "alternet-media")
+
+    await browser.close()

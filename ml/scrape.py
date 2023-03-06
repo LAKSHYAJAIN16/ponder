@@ -17,13 +17,16 @@ from ac_politics import scrape_ac_politics
 from alternet_pol import scrape_alternet_politics
 from alternet_media import scrape_alternet_media
 from globalcn import scrape_globalcn
+from rt import scrape_rt
+from vox import scrape_vox
+from american_spectator import scrape_spectator
 
 
 def alternet():
     asyncio.get_event_loop().run_until_complete(
-        scrape_alternet_politics(True, True))
-    asyncio.get_event_loop().run_until_complete(
         scrape_alternet_media(True, True))
+    asyncio.get_event_loop().run_until_complete(
+        scrape_alternet_politics(True, True))
 
 
 def cnn():
@@ -49,7 +52,23 @@ def globalcn():
     asyncio.get_event_loop().run_until_complete(
         scrape_globalcn(True, True))
 
+
+def rt():
+    asyncio.get_event_loop().run_until_complete(
+        scrape_rt(True, True))
+
+
+def vox():
+    asyncio.get_event_loop().run_until_complete(
+        scrape_vox(True, True))
+
+def american_spectator():
+    asyncio.get_event_loop().run_until_complete(
+        scrape_spectator(True, True))
+# `alternet()
 # cnn()
 # american_conservative()
-# alternet()
-globalcn()
+# globalcn()
+# rt()
+# vox()`
+american_spectator()

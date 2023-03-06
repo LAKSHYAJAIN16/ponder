@@ -64,3 +64,5 @@ async def scrape_alternet_politics(debug=False, save=True):
 
     if save == True:
         save_file(return_obj, "alternet-politics")
+
+    await browser.close()
