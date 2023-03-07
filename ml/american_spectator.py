@@ -9,7 +9,7 @@ async def scrape_spectator(debug=False, save=True):
     # Page urls to scrape
     urls = [
         "https://spectator.org/",
-        "https://spectator.org/category/blog/"
+        "https://spectator.org/category/blog/",
     ]
 
     act_headlines = []

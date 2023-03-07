@@ -5,5 +5,4 @@ export default async function handler(req, res) {
 
   //Get Params
   const last_time = req.body.last_time;
-  const all
 }

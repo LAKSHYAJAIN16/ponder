@@ -1,6 +1,5 @@
 import json
 import asyncio
-from bs4 import BeautifulSoup
 from ml_utils import save_file
 from cnn_politics import scrape_cnn_politics
 from cnn_africa import scrape_cnn_africa
@@ -65,10 +64,11 @@ def vox():
 def american_spectator():
     asyncio.get_event_loop().run_until_complete(
         scrape_spectator(True, True))
-# `alternet()
-# cnn()
-# american_conservative()
-# globalcn()
-# rt()
-# vox()`
+    
+globalcn()
+cnn()
+alternet()
+vox()
+american_conservative()
+rt()
 american_spectator()
